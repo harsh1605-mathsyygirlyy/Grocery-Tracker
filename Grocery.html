@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harshitha's Grocery Tracker</title>
+    <style>
+        /* Background and page style */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* Header style */
+        h1 {
+            color: #4CAF50;
+            margin-top: 50px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin-top: 20px;
+        }
+
+        /* Form and input fields */
+        #groceryForm {
+            margin-top: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            text-align: left;
+        }
+
+        label {
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 200px;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Grocery list style */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: white;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .need-to-buy {
+            color: red;
+            font-weight: bold;
+        }
+
+        .edit-btn, .delete-btn {
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .edit-btn {
+            color: blue;
+        }
+
+        .delete-btn {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Harshitha's Grocery Tracker</h1>
+
+    <div id="groceryForm">
+        <label for="groceryName">Grocery Name:</label>
+        <input type="text" id="groceryName" required><br><br>
+
+        <label for="groceryAmount">Amount:</label>
+        <input type="number" id="groceryAmount" required><br><br>
+
+        <button type="submit" id="addGroceryBtn">Add Grocery</button>
+    </div>
+
+    <h2>Grocery List</h2>
+    <ul id="groceryList"></ul>
+
+    <script>
+        // Load grocery list from local storage
+        function loadGroceryList() {
+            const groceries = JSON.parse(localStorage.getItem("groceries")) || [];
+            const groceryListElement = document.getElementById("groceryList");
+            groceryListElement.innerHTML = "";
+
+            groceries.forEach((grocery, index) => {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `
+                    <span class="${grocery.amount <= 0 ? 'need-to-buy' : ''}">
+                        ${grocery.name} - Amount: ${grocery.amount}
+                    </span>
+                    <button class="edit-btn" onclick="editGrocery(${index})">Edit</button>
+                    <button class="delete-btn" onclick="deleteGrocery(${index})">Delete</button>
+                `;
+                groceryListElement.appendChild(listItem);
+            });
+        }
+
+        // Save grocery list to local storage
+        function saveGroceryList(groceries) {
+            localStorage.setItem("groceries", JSON.stringify(groceries));
+        }
+
+        // Add grocery to the list and update instantly
+        function addGrocery(name, amount) {
+            const groceries = JSON.parse(localStorage.getItem("groceries")) || [];
+            groceries.push({ name, amount });
+            saveGroceryList(groceries);
+
+            // Update the list immediately after adding the item
+            const groceryListElement = document.getElementById("groceryList");
+            const listItem = document.createElement("li");
+            listItem.innerHTML = `
+                <span class="${amount <= 0 ? 'need-to-buy' : ''}">
+                    ${name} - Amount: ${amount}
+                </span>
+                <button class="edit-btn" onclick="editGrocery(${groceries.length - 1})">Edit</button>
+                <button class="delete-btn" onclick="deleteGrocery(${groceries.length - 1})">Delete</button>
+            `;
+            groceryListElement.appendChild(listItem);
+        }
+
+        // Edit grocery in the list
+        function editGrocery(index) {
+            const groceries = JSON.parse(localStorage.getItem("groceries")) || [];
+            const grocery = groceries[index];
+            const newAmount = prompt(Edit amount for ${grocery.name}:, grocery.amount);
+            
+            if (newAmount !== null && !isNaN(newAmount)) {
+                groceries[index].amount = parseInt(newAmount);
+                saveGroceryList(groceries);
+                loadGroceryList();
+            }
+        }
+
+        // Delete grocery from the list
+        function deleteGrocery(index) {
+            const groceries = JSON.parse(localStorage.getItem("groceries")) || [];
+            groceries.splice(index, 1);
+            saveGroceryList(groceries);
+            loadGroceryList();
+        }
+
+        // Form submission handler
+        document.getElementById("addGroceryBtn").addEventListener("click", function(event) {
+            event.preventDefault();
+
+            const groceryName = document.getElementById("groceryName").value;
+            const groceryAmount = parseInt(document.getElementById("groceryAmount").value);
+
+            if (groceryName && !isNaN(groceryAmount)) {
+                addGrocery(groceryName, groceryAmount);
+                document.getElementById("groceryName").value = "";
+                document.getElementById("groceryAmount").value = "";
+            }
+        });
+
+        // Initialize the app
+        loadGroceryList();
+    </script>
+</body>
+</html>
